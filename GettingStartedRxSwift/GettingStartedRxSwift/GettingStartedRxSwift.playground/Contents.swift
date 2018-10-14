@@ -97,3 +97,44 @@ example(of: "Create") {
     
 }
 
+example(of: "Single Trait") {
+    let disposeBag = DisposeBag()
+    
+    enum FileReadError: Error {
+        case fileNotFound, unreadable, encodingFaild
+    }
+    
+    func loadText(from filename: String) -> Single<String> {
+        return Single.create { single in
+            let disposable = Disposables.create()
+            
+            guard let path = Bundle.main.path(forResource: filename, ofType: "txt") else {
+                single(.error(FileReadError.fileNotFound))
+                return disposable
+            }
+            
+            guard let data = FileManager.default.contents(atPath: path) else {
+                single(.error(FileReadError.unreadable))
+                return disposable
+            }
+            
+            guard let contents = String(data: data, encoding: .utf8) else {
+                single(.error(FileReadError.encodingFaild))
+                return disposable
+            }
+            
+            single(.success(contents))
+            
+            return disposable
+        }
+    }
+    
+    loadText(from: "ANewHope")
+        .subscribe(onSuccess: { value in
+            print(value)
+        }, onError: { error in
+            print(error)
+        })
+    .disposed(by: disposeBag)
+}
+
