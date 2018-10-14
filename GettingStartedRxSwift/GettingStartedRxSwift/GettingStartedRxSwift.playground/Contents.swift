@@ -138,3 +138,34 @@ example(of: "Single Trait") {
     .disposed(by: disposeBag)
 }
 
+example(of: "Challenge Perform Side Effect: do operator") {
+    // Finite observable no ended :D
+    let observable = Observable<Any>.never()
+    observable
+        .do(
+            onNext: { value in
+                print(value)
+        },
+            onError: { error in
+                print(error)
+        },
+            onCompleted: {
+                print("Completed")
+        },
+            onSubscribe: {
+                print("On Subscribe")
+        },
+            onSubscribed: {
+                print("On subscribed")
+        },
+            onDispose: {
+                print("On disposable")
+        })
+        .subscribe(
+            onNext: { (value) in
+                print(value)
+        }, onCompleted: {
+            print("Completed")
+        })
+    .disposed(by: DisposeBag())
+}
