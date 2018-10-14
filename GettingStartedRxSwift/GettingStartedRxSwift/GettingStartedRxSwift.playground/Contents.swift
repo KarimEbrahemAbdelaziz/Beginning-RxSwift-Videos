@@ -205,3 +205,29 @@ example(of: "PublishSubject Example") {
     subsribtionTwo.dispose()
     subscribtionThree.dispose()
 }
+
+example(of: "BehaviorSubject Example") {
+    let disposeBag = DisposeBag()
+    
+    let behaviorQuotes = BehaviorSubject(value: "I am your father")
+    
+    let subscriberOne = behaviorQuotes.subscribe {
+        print(label: "1)", event: $0)
+    }
+    
+    behaviorQuotes.onNext("I am you mother")
+    
+    let subscriberTwo = behaviorQuotes.subscribe {
+        print(label: "2)", event: $0)
+    }
+    
+    behaviorQuotes.onError(Quote.neverSaidThat)
+    
+    let subscriberThree = behaviorQuotes.subscribe {
+        print(label: "3)", event: $0)
+    }
+    
+    subscriberOne.dispose()
+    subscriberTwo.dispose()
+    subscriberThree.dispose()
+}
