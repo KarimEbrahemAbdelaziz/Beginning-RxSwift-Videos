@@ -169,3 +169,39 @@ example(of: "Challenge Perform Side Effect: do operator") {
         })
     .disposed(by: DisposeBag())
 }
+
+example(of: "PublishSubject Example") {
+    
+    let quotes = PublishSubject<String>()
+    
+    quotes.onNext(itsNotMyFault)
+    
+    let subsribtionOne = quotes
+        .subscribe {
+            print(label: "1)", event: $0)
+    }
+    
+    quotes.onNext(doOrDoNot)
+    
+    let subsribtionTwo = quotes
+        .subscribe {
+            print(label: "2)", event: $0)
+    }
+    
+    quotes.onNext(lackOfFaith)
+    
+    subsribtionOne.disposed(by: DisposeBag())
+    
+    quotes.onNext(eyesCanDeceive)
+    
+    quotes.onCompleted()
+    
+    let subscribtionThree = quotes.subscribe {
+        print(label: "3)", event: $0)
+    }
+    
+    quotes.onNext(stayOnTarget)
+    
+    subsribtionTwo.dispose()
+    subscribtionThree.dispose()
+}
