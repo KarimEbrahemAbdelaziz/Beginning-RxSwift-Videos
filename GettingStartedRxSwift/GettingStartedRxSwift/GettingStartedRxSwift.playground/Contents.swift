@@ -256,3 +256,60 @@ example(of: "ReplaySubject Example") {
         .disposed(by: disposeBag)
 
 }
+
+example(of: "Variable") {
+    let disposeBag = DisposeBag()
+    
+    let variable = Variable(mayTheForceBeWithYou)
+    
+    print(variable.value)
+    
+    variable.asObservable()
+        .subscribe {
+            print(label: "1)", event: $0)
+        }
+        .disposed(by: disposeBag)
+    
+    variable.value = mayThe4thBeWithYou
+}
+
+example(of: "PublishSubject") {
+    
+    let disposeBag = DisposeBag()
+    
+    let dealtHand = PublishSubject<[(String, Int)]>()
+    
+    func deal(_ cardCount: UInt) {
+        var deck = cards
+        var cardsRemaining: UInt32 = 52
+        var hand = [(String, Int)]()
+        
+        for _ in 0..<cardCount {
+            let randomIndex = Int(arc4random_uniform(cardsRemaining))
+            hand.append(deck[randomIndex])
+            deck.remove(at: randomIndex)
+            cardsRemaining -= 1
+        }
+        
+        // Add code to update dealtHand here
+        if points(for: hand) > 21 {
+            dealtHand.onError(HandError.busted)
+        } else {
+            dealtHand.onNext(hand)
+        }
+        
+    }
+    
+    // Add subscription to dealtHand here
+    dealtHand
+        .subscribe(
+            onNext: { hand in
+                print(cardString(for: hand), "for", points(for: hand), "Points")
+        },
+            onError: { error in
+                print(String(describing: error))
+        })
+        .disposed(by: disposeBag)
+    
+    deal(3)
+}
