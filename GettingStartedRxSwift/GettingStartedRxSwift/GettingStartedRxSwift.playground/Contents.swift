@@ -231,3 +231,28 @@ example(of: "BehaviorSubject Example") {
     subscriberTwo.dispose()
     subscriberThree.dispose()
 }
+
+example(of: "ReplaySubject Example") {
+    
+    let disposeBag = DisposeBag()
+    
+    let subject = ReplaySubject<String>.create(bufferSize: 2)
+    
+    subject.onNext(useTheForce)
+    
+    subject
+        .subscribe {
+            print(label: "1)", event: $0)
+        }
+        .disposed(by: disposeBag)
+
+    subject.onNext(theForceIsStrong)
+    subject.onNext(theForceIsStrong)
+    
+    subject
+        .subscribe {
+            print(label: "2)", event: $0)
+        }
+        .disposed(by: disposeBag)
+
+}
