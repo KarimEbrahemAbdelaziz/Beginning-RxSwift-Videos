@@ -74,22 +74,21 @@ class PhotosViewController: UICollectionViewController {
             $0 == false
         }
         .take(1)
-        .subscribe(onNext: { [weak self] _ in
+        .do(onNext: { [weak self] _ in
             self?.photos = PhotosViewController.loadPhotos()
-            DispatchQueue.main.async {
-                self?.collectionView?.reloadData()
-            }
+        })
+        .observeOn(MainScheduler.instance)
+        .subscribe(onNext: { [weak self] _ in
+            self?.collectionView?.reloadData()
         })
         .disposed(by: disposeBag)
     
     authorized
         .takeLast(1)
         .filter { $0 == false }
+        .observeOn(MainScheduler.instance)
         .subscribe(onNext: { [weak self] _ in
-            guard let `self` = self else { return }
-            DispatchQueue.main.async {
-                self.errorMessage()
-            }
+            self?.errorMessage()
         })
         .disposed(by: disposeBag)
   }
