@@ -38,18 +38,19 @@ class MainViewController: UIViewController {
     super.viewDidLoad()
 
         images.asObservable()
-          .subscribe(onNext: { [weak self] photos in
-            guard let preview = self?.imagePreview else { return }
-            preview.image = UIImage.collage(images: photos,
+            .debounce(0.5, scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] photos in
+                guard let preview = self?.imagePreview else { return }
+                preview.image = UIImage.collage(images: photos,
                                             size: preview.frame.size)
-          })
-          .disposed(by: bag)
+            })
+            .disposed(by: bag)
 
         images.asObservable()
-          .subscribe(onNext: { [weak self] photos in
-            self?.updateUI(photos: photos)
-          })
-          .disposed(by: bag)
+            .subscribe(onNext: { [weak self] photos in
+                self?.updateUI(photos: photos)
+            })
+            .disposed(by: bag)
     }
 
     private func updateUI(photos: [UIImage]) {
