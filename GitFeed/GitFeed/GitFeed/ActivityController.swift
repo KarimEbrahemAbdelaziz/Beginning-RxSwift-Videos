@@ -56,6 +56,11 @@ class ActivityController: UITableViewController {
     refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
     refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
 
+    lastModified.value = try? NSString(contentsOf: modifiedFileURL, usedEncoding: nil)
+    
+    let eventsArray = (NSArray(contentsOf: eventsFileURL) as? [[String: Any]]) ?? []
+    events.value = eventsArray.flatMap(Event.init)
+    
     refresh()
   }
 
@@ -68,9 +73,15 @@ class ActivityController: UITableViewController {
   
   func fetchEvents(repo: String) {
     let response = Observable.from([repo])
-      .map { repo in
+      .map { [weak self] repo in
         let url = URL(string: "https://api.github.com/repos/\(repo)/events")!
-        return URLRequest(url: url)
+        
+        var request = URLRequest(url: url)
+        if let modifiedHeader = self?.lastModified.value {
+            request.addValue(modifiedHeader as String, forHTTPHeaderField: "Last-Modified")
+        }
+        
+        return request
       }
       .flatMap { request -> Observable<(response: HTTPURLResponse, data: Data)> in
         URLSession.shared.rx.response(request: request)
@@ -99,6 +110,27 @@ class ActivityController: UITableViewController {
         self?.processEvents(newEvents)
       })
     .disposed(by: bag)
+    
+    response
+        .filter { response, _ in
+        return 200..<400 ~= response.statusCode
+    }
+        .flatMap { response, _ -> Observable<NSString> in
+            guard let value = response.allHeaderFields["Last-Modified"] as? NSString else {
+                return Observable.empty()
+            }
+            
+            return  Observable.just(value)
+    }
+        .subscribe(onNext: { [weak self] modifiedHeader in
+            guard let `self` = self else {
+                return
+            }
+            self.lastModified.value = modifiedHeader
+            
+            try? modifiedHeader.write(to: self.modifiedFileURL, atomically: true, encoding: String.Encoding.utf8.rawValue)
+        })
+        .disposed(by: bag)
   }
   
   func processEvents(_ newEvents: [Event]) {
