@@ -60,6 +60,82 @@ example(of: "merge") {
   firstObservable.onNext("First 4")
 }
 
+example(of: "combine Latest") {
+  
+  let disposeBag = DisposeBag()
+  let numbers = Observable.of(1,   2,   3,   4,   5)
+  let chars = Observable.of( "a", "b", "c", "d", "e")
+  
+  Observable.combineLatest(numbers, chars) { number, char in
+    "\(number): \(char)"
+  }
+    .subscribe(onNext: {
+      print($0)
+    })
+  .disposed(by: disposeBag)
+  
+}
+
+example(of: "Zip") {
+  
+  let disposeBag = DisposeBag()
+  let numbers = Observable.of(1,   2,   3,   4,   5)
+  let chars = Observable.of( "a", "b", "c", "d", "e")
+  
+  Observable.zip(numbers, chars) { number, char in
+    "\(number): \(char)"
+    }
+    .subscribe(onNext: {
+      print($0)
+    })
+    .disposed(by: disposeBag)
+  
+}
+
+example(of: "amb") {
+  
+  let disposeBag = DisposeBag()
+  let numbers = PublishSubject<String>()
+  let chars = PublishSubject<String>()
+  
+  numbers.amb(chars)
+    .subscribe(onNext: {
+      print($0)
+    })
+    .disposed(by: disposeBag)
+  
+  chars.onNext("First Char")
+  
+  numbers.onNext("First number")
+  numbers.onNext("Second number")
+  
+  chars.onNext("Second Char")
+}
+
+example(of: "Reduce") {
+  
+  let disposeBag = DisposeBag()
+  
+  Observable.from([1, 2, 3, 4])
+    .reduce(0, accumulator: +)
+    .subscribe(onNext: {
+      print($0)
+    })
+    .disposed(by: disposeBag)
+}
+
+example(of: "Scan") {
+  
+  let disposeBag = DisposeBag()
+  
+  Observable.from([1, 2, 3, 4])
+    .scan(0, accumulator: +)
+    .subscribe(onNext: {
+      print($0)
+    })
+    .disposed(by: disposeBag)
+}
+
 /*:
  Copyright (c) 2014-2018 Razeware LLC
  
